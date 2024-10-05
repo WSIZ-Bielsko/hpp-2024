@@ -9,18 +9,19 @@ class User(BaseModel):
     pesel: str
     address: str
 
+    class Config:
+        frozen = True
+
 
 class UserRepo:
     def __init__(self):
         self.faker = Faker('pl_PL')
 
     def create_user(self) -> User:
-        pass
+        name = self.faker.first_name()
+        surname = self.faker.last_name()
+        age = self.faker.random_int(0, 100)
+        pesel = self.faker.pesel()
+        address = self.faker.address()
+        return User(name=name, surname=surname, age=age, pesel=pesel, address=address)
 
-
-if __name__ == '__main__':
-    repo = UserRepo()
-    print(repo.faker.first_name())
-    print(repo.faker.last_name())
-    print(repo.faker.pesel())
-    print(repo.faker.address())

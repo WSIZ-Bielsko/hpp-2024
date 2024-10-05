@@ -12,3 +12,8 @@ def shared_secret():
 def user_repo():
     repo = UserRepo()
     return repo
+
+
+@pytest.fixture
+def user(user_repo):
+    return user_repo.create_user()
