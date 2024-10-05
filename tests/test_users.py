@@ -11,7 +11,7 @@ def test_user_repo():
 
 def test_can_create_user():
     repo = UserRepo()
-    user = repo.create_user()
+    user = repo.create_random_user()
     assert user
 
 
@@ -24,7 +24,7 @@ def test_can_use_fixture(user_repo):
 
 
 def test_users_are_frozen(user_repo):
-    u = user_repo.create_user()
+    u = user_repo.create_random_user()
     with pytest.raises(ValidationError):
         u.name = 'Kadabra'
 

@@ -16,4 +16,4 @@ def user_repo():
 
 @pytest.fixture
 def user(user_repo):
-    return user_repo.create_user()
+    return user_repo.create_random_user()
