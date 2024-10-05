@@ -12,6 +12,16 @@ class User(BaseModel):
     class Config:
         frozen = True
 
+"""
+Prompt to generate UserRepo class methods for CRUD operations
+
+given the following structure (users are stored in self.users, which is a dict from user.pesel -> 
+reference to User instance); write methods for CRUD operations, in UserRepo class
+
+(insert User and constructor of UserRepo class here)
+
+"""
+
 
 class UserRepo:
     def __init__(self):
