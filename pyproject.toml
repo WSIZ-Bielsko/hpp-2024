@@ -8,9 +8,11 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 faker = "^30.1.0"
+pydantic = "^2.9.2"
 
 
 [tool.poetry.group.dev.dependencies]
+# to install dev dependencies use: `poetry add --group dev {lib_name}`
 pytest = "^8.3.3"
 
 [build-system]
