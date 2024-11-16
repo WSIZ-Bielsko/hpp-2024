@@ -3,7 +3,17 @@ from concurrent.futures import ProcessPoolExecutor, wait
 from datetime import datetime
 
 from loguru import logger
+from matplotlib import pyplot as plt
 
+
+class L:
+    def info(self, msg: str):
+        now = datetime.now()
+        tm = f"{now.strftime('%H:%M:%S')}.{now.microsecond // 1000:03d}"
+        print(f'[{tm}] {msg}')
+
+
+# logger = L()
 
 def ts() -> float:
     return datetime.now().timestamp()
@@ -19,12 +29,11 @@ def run_it(n_epochs, worker_id: int):
     return x
 
 
-if __name__ == '__main__':
+def experiment(n_epochs: int, n_workers: int):
     st = ts()
 
-    n_epochs = 5000
-    n_workers = 20
-    # res = run_it(5000)
+    # res = run_it(5000) # zwykłe uruchomienie kodu (bez wątków)
+
     # chcemy uruchomić na 10 workerach run_it(500)
 
     futures_ = []
@@ -48,3 +57,16 @@ if __name__ == '__main__':
     en = ts()
     print(f'{res=}')
     print(f'elapsed {en - st:.3f}s')
+    return res, en - st
+
+
+if __name__ == '__main__':
+    n_workers = [1, 2, 4, 6, 8, 10, 12, 16]
+    times = []
+    cpu_usage = []
+
+    for n_work in n_workers:
+        res, exec_time = experiment(n_epochs=5000, n_workers=n_work)
+        times.append(exec_time)
+        cpu_usage.append(exec_time * n_work)
+
