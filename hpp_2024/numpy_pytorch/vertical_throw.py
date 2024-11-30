@@ -26,7 +26,7 @@ def get_particle_positions(init_height: float, acc: float) -> list[float]:
     pass
 
 
-def vertical_thorw(init_height: float, init_velo: float, duration: float = 1):
+def vertical_throw(init_height: float, init_velo: float, duration: float = 1):
     g = -9.81
     duration = 10
     t = 0
@@ -49,4 +49,4 @@ def vertical_thorw(init_height: float, init_velo: float, duration: float = 1):
 
 
 if __name__ == '__main__':
-    vertical_thorw(init_height=10, init_velo=0, duration=10)
+    vertical_throw(init_height=10, init_velo=0, duration=10)
