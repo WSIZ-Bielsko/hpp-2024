@@ -1,5 +1,6 @@
 import random
 from collections import Counter
+from time import sleep
 
 
 def generate_random_dna(n_elems: int) -> str:
@@ -19,7 +20,7 @@ def gen_random_markers(dna: str, n_markers: int, marker_len: int, job_id: int) -
         i += 1
         if (i + 1) % 1000 == 0:
             print(f'id={job_id} have {len(markers)} markers')
-
+    sleep(1.5)
     return list(markers)
 
 

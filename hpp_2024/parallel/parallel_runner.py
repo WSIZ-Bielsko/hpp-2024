@@ -9,7 +9,8 @@ if __name__ == '__main__':
     futures = []
     for i in range(20):
         # markers = gen_random_markers(dna, n_markers=10, marker_len=9)
-        futures.append(executor.submit(gen_random_markers, dna, n_markers=10, marker_len=10, job_id=i))
+        futures.append(executor.submit(gen_random_markers, dna, n_markers=10,
+                                       marker_len=10, job_id=i))
 
     wait(futures)
     for f in futures:

@@ -1,6 +1,8 @@
 from datetime import datetime
 from random import random
 
+import numpy as np
+
 
 def sim_distance(acc: float, duration: float) -> float:
     s = 0
@@ -69,6 +71,33 @@ def plot_histo(data: list[float]):
     plt.show()
 
 
+def generate_conserved_velocities(velocities):
+    # Assuming 'velocities' is your original numpy array of shape (n, m)
+    # where n is the number of particles and m is the number of velocity components
+
+    # Step 1: Calculate the total momentum and kinetic energy of the original velocities
+    total_momentum = np.sum(velocities, axis=0)
+    total_kinetic_energy = 0.5 * np.sum(velocities ** 2)
+
+    # Step 2: Generate new random velocities
+    new_velocities = np.random.randn(*velocities.shape)
+
+    # Step 3: Rescale the new velocities to conserve the total momentum
+    momentum_scale = np.sqrt(np.sum(new_velocities ** 2) / np.sum(velocities ** 2))
+    new_velocities *= momentum_scale
+
+    # Step 4: Adjust the total momentum to match the original
+    momentum_difference = total_momentum - np.sum(new_velocities, axis=0)
+    new_velocities += momentum_difference / velocities.shape[0]
+
+    # Step 5: Adjust the new velocities to conserve kinetic energy
+    new_kinetic_energy = 0.5 * np.sum(new_velocities ** 2)
+    energy_scale = np.sqrt(total_kinetic_energy / new_kinetic_energy)
+    new_velocities *= energy_scale
+
+    # Now 'new_velocities' has the same total momentum and kinetic energy as 'velocities'
+    return new_velocities
+
 
 def get_average_velocity(heights: list[float], velocities: list[float], height_range: tuple[float, float]) -> float:
     """
@@ -81,18 +110,26 @@ def get_average_velocity(heights: list[float], velocities: list[float], height_r
     """
     pass
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     # todo: use the code below, but for an ensamble of N=100 particles
-    heights, velocities = get_random_particles(n_particles=100)
-    for step in range(10000):
-        n_heights, n_velocities = simulate(heights, velocities, duration=0.3)
-        heights, velocities = n_heights, n_velocities
-        # print(f'h={heights[0]:.2f} v={velocities[0]:.2f}')
-    plot_histo(velocities)
+    # heights, velocities = get_random_particles(n_particles=100)
+    # for step in range(10000):
+    #     n_heights, n_velocities = simulate(heights, velocities, duration=0.3)
+    #     heights, velocities = n_heights, n_velocities
+    #     # print(f'h={heights[0]:.2f} v={velocities[0]:.2f}')
+    # plot_histo(velocities)
 
     # h = 10
     # v = 0
     # for _ in range(10):
     #     h, v = vertical_throw(h, v, duration=1)
     #     print(f'h={h:.2f} v={v:.2f}')
+
+    d = [1, -1, 3.14, 1.41]
+    d = np.array(d)
+    x = generate_conserved_velocities(d)
+    print(x)
+    print(np.sum(d), np.sum(x))
+    print(np.sum(d**2), np.sum((x**2)))
+
