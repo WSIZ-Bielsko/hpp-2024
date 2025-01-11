@@ -10,18 +10,18 @@ class SharedData(BaseModel):
     measurement: float
 
 
-async def job(i: int) -> int:
-    logger.info(f'from job {i}')
-    await sleep(0.5)
-    logger.info(f'from job {i} - done')
-    return i
-
-
 async def sensor_loop(shared_data: SharedData):
     while shared_data.run_sensor:
         logger.info(f'sensor measure')
         await sleep(0.1)
         shared_data.measurement = random.random()
+
+
+async def job(i: int) -> int:
+    logger.info(f'from job {i}')
+    await sleep(0.5)
+    logger.info(f'from job {i} - done')
+    return i
 
 
 async def main():
