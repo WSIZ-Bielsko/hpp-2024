@@ -37,6 +37,7 @@ async def test_can_start_ship():
     # assert SHIP_RUNNING at least 0.1s after ENGINE_RUNNING
 
 
+@pytest.mark.asyncio
 async def test_event_logger():
     logger = EventLogger()
     logger.log(EventType.SHIP_STARTED)
@@ -44,9 +45,10 @@ async def test_event_logger():
 
     log = logger.get_events_of_type(event_types=[])  # all
     types = [l.event_type for l in log]
-    assert types == [EventType.FTS_EXPLODED, EventType.SHIP_STARTED]
+    assert types == [EventType.SHIP_STARTED, EventType.FTS_EXPLODED]
 
 
+@pytest.mark.asyncio
 async def test_event_logger_with_time():
     logger = EventLogger()
     logger.log(EventType.SHIP_STARTED)

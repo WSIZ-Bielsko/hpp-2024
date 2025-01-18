@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABC
 from asyncio import sleep
+from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel
@@ -8,7 +9,7 @@ from pydantic import BaseModel
 class AsyncComponent(ABC):
 
     @abstractmethod
-    async def initialize(self):
+    async def initialize(self, event_logger: 'EventLogger', action_bus: 'ActionBus'):
         pass
 
     @abstractmethod
@@ -72,13 +73,29 @@ class EventLogger:
         self.events: list[Event] = []
 
     def log(self, event: EventType):
-        pass
+        self.events.append(Event(event_type=event, timestamp=datetime.now().timestamp()))
 
     def get_events_of_type(self, event_types: list[EventType]) -> list[Event]:
         """list all events with types as in event_types, or all if this list is empty
           events are listed in order in which they were submitted to EventLogger
         """
+        if event_types == []:
+            return self.events
+        else:
+            return [e for e in self.events if e.event_type in event_types]
 
+
+class ActionBus:
+    def __init__(self):
+        self.action_id = 0
+        self.actions: list[tuple[int, Action]] = []
+
+    def submit_action(self, action_type: Action):
+        self.action_id += 1
+        self.actions.append((self.action_id, action_type))
+
+    def get_actions_since(self, action_id) -> list[Action]:
+        pass
 
 
 class HQ(AsyncComponent):
