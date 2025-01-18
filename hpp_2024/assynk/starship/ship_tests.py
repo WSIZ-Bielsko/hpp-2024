@@ -1,6 +1,9 @@
-import pytest
+from asyncio import sleep
 
-from hpp_2024.assynk.starship.model import Ship, add
+import pytest
+from pydantic import BaseModel
+
+from hpp_2024.assynk.starship.model import Ship, add, Action, EventLogger, EventType
 
 
 @pytest.fixture
@@ -19,3 +22,37 @@ def test_bla_bla():
     y = 15
     z = x + y
     assert z == 16
+
+
+async def test_can_start_engine():
+    actions = [(Action.ENGINE_START, 0), ]
+
+
+async def test_can_start_ship():
+    actions = [(Action.ENGINE_START, 0), (Action.SHIP_START, 0.1)]
+
+    # assert ENGINE_RUNNING
+    # assert SHIP_RUNNING
+    # assert SHIP_RUNNING after ENGINE_RUNNING
+    # assert SHIP_RUNNING at least 0.1s after ENGINE_RUNNING
+
+
+async def test_event_logger():
+    logger = EventLogger()
+    logger.log(EventType.SHIP_STARTED)
+    logger.log(EventType.FTS_EXPLODED)
+
+    log = logger.get_events_of_type(event_types=[])  # all
+    types = [l.event_type for l in log]
+    assert types == [EventType.FTS_EXPLODED, EventType.SHIP_STARTED]
+
+
+async def test_event_logger_with_time():
+    logger = EventLogger()
+    logger.log(EventType.SHIP_STARTED)
+    await sleep(0.1)
+    logger.log(EventType.FTS_EXPLODED)
+
+    log = logger.get_events_of_type(event_types=[])  # all
+
+    assert log[1].timestamp - log[0].timestamp >= 0.1
