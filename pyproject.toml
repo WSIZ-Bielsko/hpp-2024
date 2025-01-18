@@ -17,6 +17,7 @@ matplotlib = "^3.9.2"
 [tool.poetry.group.dev.dependencies]
 # to install dev dependencies use: `poetry add --group dev {lib_name}`
 pytest = "^8.3.3"
+pytest-asyncio = "^0.25.2"
 
 [build-system]
 requires = ["poetry-core"]
