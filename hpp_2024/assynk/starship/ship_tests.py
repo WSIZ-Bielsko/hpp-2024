@@ -3,18 +3,35 @@ from asyncio import sleep
 import pytest
 from pydantic import BaseModel
 
-from hpp_2024.assynk.starship.model import Ship, add, Action, EventLogger, EventType
+from hpp_2024.assynk.starship.model import Ship, add, ActionType, EventLogger, EventType, ActionBus, Engine
 
 
 @pytest.fixture
-async def ship():
-    return Ship()
+async def elogger():
+    yield EventLogger()
+
+
+@pytest.fixture
+async def abus():
+    yield ActionBus()
+
+
+@pytest.fixture
+async def engine(elogger, abus):
+    yield Engine(elogger, abus)
 
 
 @pytest.mark.asyncio
-async def test_can_add(ship):
+async def test_can_add():
     res = await add(1, 2)
     assert res == 3
+
+
+@pytest.mark.asyncio
+async def test_can_create_engine(elogger, abus):
+    engine = Engine(elogger, abus)
+    assert engine is not None
+
 
 
 def test_bla_bla():
@@ -25,11 +42,11 @@ def test_bla_bla():
 
 
 async def test_can_start_engine():
-    actions = [(Action.ENGINE_START, 0), ]
+    actions = [(ActionType.ENGINE_START, 0), ]
 
 
 async def test_can_start_ship():
-    actions = [(Action.ENGINE_START, 0), (Action.SHIP_START, 0.1)]
+    actions = [(ActionType.ENGINE_START, 0), (ActionType.SHIP_START, 0.1)]
 
     # assert ENGINE_RUNNING
     # assert SHIP_RUNNING
@@ -44,7 +61,7 @@ async def test_event_logger():
     logger.log(EventType.FTS_EXPLODED)
 
     log = logger.get_events_of_type(event_types=[])  # all
-    types = [l.event_type for l in log]
+    types = [l.type for l in log]
     assert types == [EventType.SHIP_STARTED, EventType.FTS_EXPLODED]
 
 
