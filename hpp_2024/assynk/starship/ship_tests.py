@@ -7,12 +7,12 @@ from hpp_2024.assynk.starship.model import Ship, add, ActionType, EventLogger, E
 
 
 @pytest.fixture
-async def elogger():
+def elogger():
     yield EventLogger()
 
 
 @pytest.fixture
-async def abus():
+def abus():
     yield ActionBus()
 
 
@@ -31,7 +31,6 @@ async def test_can_add():
 async def test_can_create_engine(elogger, abus):
     engine = Engine(elogger, abus)
     assert engine is not None
-
 
 
 def test_bla_bla():
@@ -75,3 +74,23 @@ async def test_event_logger_with_time():
     log = logger.get_events_of_type(event_types=[])  # all
 
     assert log[1].timestamp - log[0].timestamp >= 0.1
+
+
+@pytest.mark.asyncio
+async def test_can_start_engine(abus, elogger):
+    engine = Engine(elogger, abus, frequency=5)
+    await engine.initialize()
+    abus.submit_action(ActionType.ENGINE_START)
+    await engine.running_gate(desired_running=True)
+
+    await engine.terminate()  # internal loop of engine (and its task) is terminated
+
+
+@pytest.mark.asyncio
+async def test_ship_can_start_with_engine_and_fts(abus, elogger):
+    pass
+
+
+@pytest.mark.asyncio
+async def test_ship_cant_start_without_engine(abus, elogger):
+    pass
