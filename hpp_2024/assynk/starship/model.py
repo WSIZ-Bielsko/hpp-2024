@@ -6,6 +6,7 @@ from enum import Enum
 from pydantic import BaseModel
 from loguru import logger
 
+
 class Clock:
     delta_t = 0.001
 
@@ -41,10 +42,9 @@ class AsyncComponent(ABC):
         logger.warning(f'Shutting down {self.__class__.__name__}')
         self.__should_be_running = False
 
-
     async def initialize(self):
         """Only way to actually start component's internal loop (so it listens for Actions)"""
-        logger.info('initializing component')
+        logger.info(f'initializing component {self.__class__.__name__}')
         await sleep(Clock.delta_t * self.frequency * 5)
         create_task(self.__run())
 
@@ -71,6 +71,9 @@ class AsyncComponent(ABC):
         if self.__should_be_running:
             return
         self.__should_be_running = True
+
+        # main action loop
+        logger.info(f'starting action loop of {self.__class__.__name__}')
         while self.__should_be_running:
             await self.__process_actions()
             await sleep(Clock.delta_t * self.frequency)
@@ -87,6 +90,8 @@ class AsyncComponent(ABC):
     async def __process_actions(self):
         # reference (and sufficient) implementation
         actions = self._action_bus.get_actions_since(self.__last_action_id)
+        if not actions:
+            return
         self.__last_action_id = actions[-1].id
         for action in actions:
             await self.act_on(action.type)
@@ -99,11 +104,14 @@ class ActionType(Enum):
 
     # SHIP
     SHIP_START = 100
+    SHIP_ACCELERATE = 101
 
     # HQ
 
     # FTS
-    FTS_EXPLODE = 500
+    FTS_ARM = 500
+    FTS_DISARM = 501
+    FTS_EXPLODE = 599
 
     # CONNECTIONS
     CONNECT_HQ_SHIP = 600
@@ -129,7 +137,10 @@ class EventType(Enum):
     HQ_CONNECTED_TO_SHIP = 200
 
     # FTS
-    FTS_EXPLODED = 500
+    FTS_ARMED = 500
+    FTS_DISARMED = 501
+    FTS_COMMAND_IGNORED = 502
+    FTS_EXPLODED = 599
 
     # CONNECTIONS
     CONNECTION_HQ_SHIP_ESTABLISHED = 600
@@ -173,7 +184,7 @@ class ActionBus:
         self.action_id += 1
         self.actions.append(Action(id=self.action_id, type=action_type))
 
-    def get_actions_since(self, action_id) -> list[Action]:
+    def get_actions_since(self, action_id: int) -> list[Action]:
         action_id = max(action_id, 0)
         return self.actions[action_id:]
 
@@ -181,18 +192,61 @@ class ActionBus:
 class Engine(AsyncComponent):
     async def act_on(self, action: 'ActionType'):
         if action == ActionType.ENGINE_START:
+            logger.info('engine reacting on ENGINE_START')
             await sleep(Clock.delta_t * self.frequency * 2)
             self._is_running = True
             self._log(EventType.ENGINE_STARTED)
+
         if action == ActionType.ENGINE_STOP:
+            logger.info('engine reacting on ENGINE_STOP')
             await sleep(Clock.delta_t * self.frequency * 2)
             self._is_running = False
             self._log(EventType.ENGINE_STOPPED)
 
 
+class FTSState(Enum):
+    UNARMED = 0
+    ARMED = 1
+    EXPLODED = 2
+    IN_ERROR = 3
+
+
 class FTS(AsyncComponent):
-    def __init__(self, event_logger: 'EventLogger', action_bus: 'ActionBus'):
-        super().__init__(event_logger, action_bus)
+
+    def __init__(self, event_logger: 'EventLogger', action_bus: 'ActionBus', frequency: int = 1):
+        super().__init__(event_logger, action_bus, frequency)
+        self.state = FTSState.UNARMED
+
+    async def act_on(self, action: 'ActionType'):
+        if action == ActionType.FTS_EXPLODE:
+            logger.info('acting on FTS_EXPLODE')
+            if self.state != FTSState.ARMED:
+                self._log(EventType.FTS_COMMAND_IGNORED)
+                return
+
+            await sleep(Clock.delta_t * self.frequency * 1)
+            self.state = FTSState.EXPLODED
+            self._log(EventType.FTS_EXPLODED)
+            await self.terminate()
+
+        if action == ActionType.FTS_DISARM:
+            logger.info('acting on FTS_DISARM')
+            if self.state != FTSState.ARMED:
+                self._log(EventType.FTS_COMMAND_IGNORED)
+                return
+            await sleep(Clock.delta_t * self.frequency * 1)
+            self.state = FTSState.UNARMED
+            self._log(EventType.FTS_DISARMED)
+
+        if action == ActionType.FTS_ARM:
+            logger.info('acting on FTS_ARM')
+            if self.state != FTSState.UNARMED:
+                self._log(EventType.FTS_COMMAND_IGNORED)
+                return
+            await sleep(Clock.delta_t * self.frequency * 1)
+            self.state = FTSState.ARMED
+            self._log(EventType.FTS_ARMED)
+
 
 
 class Ship(AsyncComponent):
@@ -201,6 +255,12 @@ class Ship(AsyncComponent):
         super().__init__(event_logger, action_bus)
         self.engine = engine
         self.fts = fts
+
+    async def act_on(self, action: 'ActionType'):
+        if action == ActionType.SHIP_START:
+            pass
+        if action == ActionType.SHIP_ACCELERATE:
+            pass
 
 
 class HQ(AsyncComponent):
