@@ -32,7 +32,7 @@ async def test_fts():
     action_bus = ActionBus()
     event_logger = EventLogger()
 
-    # utworzenie obiektu "engine"; narazie nie będzie odpowiadał na żadne actions
+    # utworzenie obiektu "fts"; narazie nie będzie odpowiadał na żadne actions
     fts = FTS(action_bus=action_bus, event_logger=event_logger, frequency=1)
 
     await fts.initialize()
