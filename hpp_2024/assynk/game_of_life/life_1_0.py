@@ -1,23 +1,40 @@
+from datetime import datetime
+
 import numpy as np
+
+
+def ts():
+    return datetime.now().timestamp()
 
 
 class Life:
     def __init__(self, n_cols, n_rows):
         self.n_cols = n_cols
         self.n_rows = n_rows
-        self.board = np.zeros((n_rows, n_cols), dtype=np.int16).tolist()
+        self.board: np.ndarray = np.zeros((n_rows, n_cols), dtype=np.int16)
 
     def get_new_board(self):
-        new_board = np.zeros((self.n_rows, self.n_cols), dtype=np.int16).tolist()
+        """
+        Evolves the "board" by one year:
+        - computes new board by applying the rules of the game
+        - substitutes self.board by the new board
+        :return:
+        """
 
         # now loop over rows and cols in self.board
         # compute n_neigbors; decide if new cell is alive or not
+
+        new_board = [self.get_new_row(r) for r in range(self.n_rows)]
+        new_board = np.array(new_board)
 
         self.board = new_board
 
     def get_new_row(self, row) -> list[int]:
         # for each column in `row` -- compute if it should be born, survive, or die
-        pass
+        return [
+            self.get_new_state(self.board[row][col], self.get_n_neigbors(row, col))
+            for col in range(self.n_cols)
+        ]
 
     def get_new_state(self, current: int, n_alive_neighbors: int) -> int:
         """
@@ -48,10 +65,8 @@ class Life:
             and 0 <= col + dc < self.n_cols
         )
 
+    def print_board_console(self):
+        # wydrukować ją na konsoli, zamieniając 0 na ., a 1 na *
+        for row in self.board:
+            print(''.join(['○' if x == 0 else '●' for x in row]))
 
-if __name__ == '__main__':
-    ll = Life(n_cols=3, n_rows=3)
-    ll.board[0][0] = 1
-    ll.board[1][1] = 1
-    ll.board[1][2] = 1
-    print(ll.get_n_neigbors(1, 1))
